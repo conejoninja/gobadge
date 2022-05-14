@@ -2,19 +2,13 @@ package main
 
 import (
 	"image/color"
-	"machine"
 	"math/rand"
+	"machine"
 	"time"
 
 	"github.com/tinygo-org/gobadge/fonts"
 	"tinygo.org/x/tinyfont"
-)
 
-const (
-	BCK = iota
-	SNAKE
-	APPLE
-	TEXT
 )
 
 const (
@@ -36,26 +30,41 @@ type Snake struct {
 }
 
 type Game struct {
-	colors         []color.RGBA
 	snake          Snake
 	appleX, appleY int16
 	status         uint8
 }
 
+
+const (
+	BCK = iota
+	SNAKE
+	APPLE
+	TEXT
+)
+
+var gameColors = []color.RGBA{
+	color.RGBA{0, 0, 0, 255},
+	color.RGBA{0, 200, 0, 255},
+	color.RGBA{250, 0, 0, 255},
+	color.RGBA{160, 160, 160, 255},
+}
+
 func (game *Game) Start() {
 	game.status = START
-	scoreStr := []byte("SCORE: 123")
-	display.FillScreen(game.colors[BCK])
+	//scoreStr := []byte("SCORE: 123")
+	display.FillScreen(gameColors[BCK])
 	play := true
 	for play {
 		switch game.status {
 		case START:
-			display.FillScreen(game.colors[BCK])
+			display.FillScreen(gameColors[BCK])
 
-			tinyfont.WriteLine(&display, &fonts.Bold24pt7b, 0, 50, "SNAKE", game.colors[TEXT])
-			tinyfont.WriteLine(&display, &fonts.Regular12pt7b, 8, 100, "Press START", game.colors[TEXT])
+			tinyfont.WriteLine(&display, &fonts.Bold24pt7b, 0, 50, "SNAKE", gameColors[TEXT])
+			tinyfont.WriteLine(&display, &fonts.Regular12pt7b, 8, 100, "Press START", gameColors[TEXT])
 
 			time.Sleep(2 * time.Second)
+
 			for game.status == START {
 				pressed, _ := buttons.Read8Input()
 				if pressed&machine.BUTTON_START_MASK > 0 {
@@ -67,31 +76,31 @@ func (game *Game) Start() {
 
 			}
 			break
-		case GAMEOVER:
-			display.FillScreen(game.colors[BCK])
+		/*case GAMEOVER:
+		display.FillScreen(gameColors[BCK])
 
-			scoreStr[7] = 48 + uint8((game.snake.length-3)/100)
-			scoreStr[8] = 48 + uint8(((game.snake.length-3)/10)%10)
-			scoreStr[9] = 48 + uint8((game.snake.length-3)%10)
+		scoreStr[7] = 48 + uint8((game.snake.length-3)/100)
+		scoreStr[8] = 48 + uint8(((game.snake.length-3)/10)%10)
+		scoreStr[9] = 48 + uint8((game.snake.length-3)%10)
 
-			tinyfont.WriteLine(&display, &fonts.Regular12pt7b, 8, 50, "GAME OVER", game.colors[TEXT])
-			tinyfont.WriteLine(&display, &fonts.Regular12pt7b, 8, 100, "Press START", game.colors[TEXT])
-			tinyfont.WriteLine(&display, &tinyfont.TomThumb, 50, 120, string(scoreStr), game.colors[TEXT])
+		tinyfont.WriteLine(&display, &fonts.Regular12pt7b, 8, 50, "GAME OVER", gameColors[TEXT])
+		tinyfont.WriteLine(&display, &fonts.Regular12pt7b, 8, 100, "Press START", gameColors[TEXT])
+		tinyfont.WriteLine(&display, &tinyfont.TomThumb, 50, 120, string(scoreStr), gameColors[TEXT])
 
-			time.Sleep(2 * time.Second)
-			for game.status == GAMEOVER {
-				pressed, _ := buttons.Read8Input()
-				if pressed&machine.BUTTON_START_MASK > 0 {
-					game.status = START
-				}
-				if pressed&machine.BUTTON_SELECT_MASK > 0 {
-					game.status = QUIT
-				}
-
+		time.Sleep(2 * time.Second)
+		for game.status == GAMEOVER {
+			pressed, _ := buttons.Read8Input()
+			if pressed&machine.BUTTON_START_MASK > 0 {
+				game.status = START
 			}
-			break
+			if pressed&machine.BUTTON_SELECT_MASK > 0 {
+				game.status = QUIT
+			}
+
+		}
+		break */
 		case PLAY:
-			display.FillScreen(game.colors[BCK])
+			display.FillScreen(gameColors[BCK])
 			game.snake.body = [208][2]int16{
 				{0, 3},
 				{0, 2},
@@ -100,7 +109,7 @@ func (game *Game) Start() {
 			game.snake.length = 3
 			game.snake.direction = 3
 			game.drawSnake()
-			game.createApple()
+			/*game.createApple()
 			time.Sleep(2000 * time.Millisecond)
 			for game.status == PLAY {
 
@@ -131,11 +140,11 @@ func (game *Game) Start() {
 				}
 				game.moveSnake()
 				time.Sleep(100 * time.Millisecond)
-			}
+			} */
 
 			break
 		case QUIT:
-			display.FillScreen(game.colors[BCK])
+			display.FillScreen(gameColors[BCK])
 			play = false
 			break
 		}
@@ -158,7 +167,7 @@ func (g *Game) createApple() {
 		g.appleX = int16(rand.Int31n(16))
 		g.appleY = int16(rand.Int31n(13))
 	}
-	g.drawSnakePartial(g.appleX, g.appleY, g.colors[APPLE])
+	g.drawSnakePartial(g.appleX, g.appleY, gameColors[APPLE])
 }
 
 func (g *Game) moveSnake() {
@@ -197,13 +206,13 @@ func (g *Game) moveSnake() {
 	}
 
 	// draw head
-	g.drawSnakePartial(x, y, g.colors[SNAKE])
+	g.drawSnakePartial(x, y, gameColors[SNAKE])
 	if x == g.appleX && y == g.appleY {
 		g.snake.length++
 		g.createApple()
 	} else {
 		// remove tail
-		g.drawSnakePartial(g.snake.body[g.snake.length-1][0], g.snake.body[g.snake.length-1][1], g.colors[BCK])
+		g.drawSnakePartial(g.snake.body[g.snake.length-1][0], g.snake.body[g.snake.length-1][1], gameColors[BCK])
 	}
 	for i := g.snake.length - 1; i > 0; i-- {
 		g.snake.body[i][0] = g.snake.body[i-1][0]
@@ -214,8 +223,14 @@ func (g *Game) moveSnake() {
 }
 
 func (g *Game) drawSnake() {
+	println("drawSnake")
 	for i := int16(0); i < g.snake.length; i++ {
-		g.drawSnakePartial(g.snake.body[i][0], g.snake.body[i][1], g.colors[SNAKE])
+		// This runs fine
+		println(g.snake.length)
+
+		// THIS FAILS WITH "panic: runtime error: goroutine stack overflow" EVEN WHEN IT'S NOT EXECUTED ?
+		//println(g.snake.length,g.snake.body[0][0])
+		//g.drawSnakePartial(g.snake.body[i][0], g.snake.body[i][1], gameColors[SNAKE])
 	}
 }
 
